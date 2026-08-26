@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SilentGuard Team Tracker</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 700px; margin: 40px auto; background: #f4f4f4; }
+        h1 { color: #2c3e50; }
+        form { margin-bottom: 20px; display: flex; gap: 8px; }
+        input[type=text] { padding: 8px; flex: 1; }
+        button { padding: 8px 16px; background: #2c3e50; color: white; border: none; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background: #2c3e50; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Team Activity Log</h1>
+
+    <form action="/add" method="POST">
+        <input type="text" name="name" placeholder="Your name" required>
+        <input type="text" name="task" placeholder="What did you do?" required>
+        <button type="submit">Log it</button>
+    </form>
+
+    <h2>Contribution Summary</h2>
+    <table>
+        <tr><th>Name</th><th>Tasks Logged</th></tr>
+        {% for name, count in stats %}
+        <tr><td>{{ name }}</td><td>{{ count }}</td></tr>
+        {% endfor %}
+    </table>
+
+    <h2>Full Log</h2>
+<table>
+    <tr><th>Name</th><th>Task</th><th>Time</th><th></th></tr>
+    {% for id, name, task, timestamp in logs %}
+    <tr>
+        <td>{{ name }}</td>
+        <td>{{ task }}</td>
+        <td>{{ timestamp }}</td>
+        <td><a href="/delete/{{ id }}">delete</a></td>
+    </tr>
+    {% endfor %}
+    </table>
+</body>
+</html>
