@@ -2,122 +2,306 @@
 <html>
 <head>
     <title>SilentGuard Team Tracker</title>
-   <style>
-    body {
-        font-family: 'Segoe UI', sans-serif;
-        max-width: 700px;
-        margin: 40px auto;
-        background: linear-gradient(135deg, #fdf2f8, #f0f9ff);
-        color: #4a4a68;
-        padding: 0 20px;
-    }
-    h1 {
-        color: #8b5cf6;
-        font-size: 2rem;
-    }
-    h1::before { content: "🌸 "; }
-    h2 { color: #a78bfa; }
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            max-width: 720px;
+            margin: 40px auto;
+            background: linear-gradient(135deg, #fdf2f8, #f0f9ff, #fef9ef);
+            background-attachment: fixed;
+            color: #4a4a68;
+            padding: 0 20px 60px;
+        }
+        h1 { color: #8b5cf6; font-size: 2rem; margin-bottom: 4px; }
+        h1::before { content: "🌸 "; }
+        .subtitle { color: #a78bfa; font-size: 0.9rem; margin-bottom: 24px; }
+        h2 { color: #a78bfa; font-size: 1.1rem; margin-top: 32px; display: flex; align-items: center; justify-content: space-between; }
 
-    form {
-        margin-bottom: 24px;
-        display: flex;
-        gap: 10px;
-    }
-    input[type=text] {
-        padding: 10px 14px;
-        flex: 1;
-        border: 2px solid #e9d5ff;
-        border-radius: 12px;
-        outline: none;
-        transition: border-color 0.2s;
-    }
-    input[type=text]:focus { border-color: #c084fc; }
+        .panel {
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 18px;
+            padding: 18px 20px;
+            box-shadow: 0 8px 24px rgba(192, 132, 252, 0.15);
+        }
 
-    button {
-        padding: 10px 20px;
-        background: #c084fc;
-        color: white;
-        border: none;
-        border-radius: 12px;
-        cursor: pointer;
-        font-weight: 600;
-        transition: background 0.2s, transform 0.1s;
-    }
-    button:hover { background: #a855f7; transform: scale(1.03); }
+        form { display: flex; gap: 10px; margin-bottom: 8px; }
+        input[type=text] {
+            padding: 10px 14px;
+            flex: 1;
+            border: 2px solid #e9d5ff;
+            border-radius: 12px;
+            outline: none;
+            background: rgba(255,255,255,0.8);
+            transition: border-color 0.2s;
+        }
+        input[type=text]:focus { border-color: #c084fc; }
+        button {
+            padding: 10px 20px;
+            background: #c084fc;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s, transform 0.1s;
+        }
+        button:hover { background: #a855f7; transform: scale(1.03); }
 
-    table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        background: white;
-        margin-bottom: 24px;
-        border-radius: 14px;
-        overflow: hidden;
-        box-shadow: 0 4px 12px rgba(192, 132, 252, 0.15);
-    }
-    th, td { padding: 12px 14px; text-align: left; }
-    th {
-        background: #e9d5ff;
-        color: #6b21a8;
-        font-weight: 600;
-    }
-    tr:nth-child(even) td { background: #fdf4ff; }
-    tr:hover td { background: #f5e8ff; }
+        .stat-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 12px 0;
+        }
+        .avatar {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 700; font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        .stat-info { flex: 1; }
+        .stat-name { font-weight: 600; font-size: 0.9rem; margin-bottom: 4px; }
+        .bar-track {
+            background: rgba(0,0,0,0.06);
+            border-radius: 8px;
+            height: 10px;
+            overflow: hidden;
+        }
+        .bar-fill {
+            height: 100%;
+            border-radius: 8px;
+            width: 0%;
+            transition: width 0.6s ease;
+        }
+        .stat-count {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #6b21a8;
+            min-width: 20px;
+            text-align: right;
+        }
 
-    a.delete-link {
-        color: #f472b6;
-        text-decoration: none;
-        font-weight: 500;
-    }
-    a.delete-link:hover { text-decoration: underline; }
-</style>
+        .log-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 14px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            opacity: 0;
+            transform: translateY(8px);
+            animation: fadeIn 0.4s ease forwards;
+        }
+        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+        .log-details { flex: 1; }
+        .log-name { font-weight: 600; font-size: 0.9rem; }
+        .log-task { color: #4a4a68; font-size: 0.9rem; }
+        .log-time { color: #a78bfa; font-size: 0.75rem; margin-top: 2px; }
+        a.delete-link {
+            color: #f472b6;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+        a.delete-link:hover { text-decoration: underline; }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px 10px;
+            color: #a78bfa;
+            font-size: 0.95rem;
+        }
+
+        #mascot { transition: transform 0.3s ease; }
+        #mascot.idle { animation: bob 2.4s ease-in-out infinite; }
+        #mascot.happy { animation: bounce-happy 0.6s ease; }
+        @keyframes bob {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-4px) rotate(-2deg); }
+        }
+        @keyframes bounce-happy {
+            0% { transform: scale(1) translateY(0); }
+            30% { transform: scale(1.15, 0.85) translateY(4px); }
+            55% { transform: scale(0.95, 1.1) translateY(-14px); }
+            75% { transform: scale(1.05, 0.95) translateY(2px); }
+            100% { transform: scale(1) translateY(0); }
+        }
+
+        .export-link, .sort-link {
+            font-size: 0.75rem;
+            color: #a78bfa;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .export-link:hover, .sort-link:hover { text-decoration: underline; }
+    </style>
 </head>
 <body>
     <h1>Team Activity Log</h1>
 
-    <form id="log-form">
-        <input type="text" id="name" name="name" placeholder="Your name" required>
-        <input type="text" id="task" name="task" placeholder="What did you do?" required>
-        <button type="submit">Log it</button>
-    </form>
+    <div id="mascot-wrap" style="text-align:center; margin-bottom: 10px;">
+        <svg id="mascot" width="90" height="90" viewBox="0 0 100 100">
+            <ellipse cx="50" cy="58" rx="34" ry="30" fill="#c084fc"/>
+            <ellipse cx="28" cy="30" rx="10" ry="12" fill="#c084fc"/>
+            <ellipse cx="72" cy="30" rx="10" ry="12" fill="#c084fc"/>
+            <ellipse cx="28" cy="30" rx="5" ry="6" fill="#f472b6"/>
+            <ellipse cx="72" cy="30" rx="5" ry="6" fill="#f472b6"/>
+            <circle id="eye-l" cx="38" cy="55" r="4" fill="#4a4a68"/>
+            <circle id="eye-r" cx="62" cy="55" r="4" fill="#4a4a68"/>
+            <ellipse cx="30" cy="65" rx="5" ry="3" fill="#f9a8d4" opacity="0.7"/>
+            <ellipse cx="70" cy="65" rx="5" ry="3" fill="#f9a8d4" opacity="0.7"/>
+            <path id="mouth" d="M 42 68 Q 50 72 58 68" stroke="#4a4a68" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        </svg>
+        <div id="mascot-msg" style="font-size:0.8rem; color:#a78bfa; height:16px;"></div>
+    </div>
+
+    <div class="subtitle">SilentGuard — keeping everyone's contributions visible</div>
+
+    <div class="panel">
+        <form id="log-form">
+            <input type="text" id="name" placeholder="Your name" required>
+            <input type="text" id="task" placeholder="What did you do?" required>
+            <button type="submit">Log it</button>
+        </form>
+        <div style="margin-top:10px;">
+            <a href="#" id="sort-toggle" class="sort-link">↕ Newest first</a>
+        </div>
+    </div>
 
     <h2>Contribution Summary</h2>
-    <table>
-        <tr><th>Name</th><th>Tasks Logged</th></tr>
-        <tbody id="stats-body"></tbody>
-    </table>
+    <div class="panel" id="stats-panel"></div>
 
-    <h2>Full Log</h2>
-    <table>
-        <tr><th>Name</th><th>Task</th><th>Time</th><th></th></tr>
-        <tbody id="logs-body"></tbody>
-    </table>
+    <h2>Full Log <a href="/export" class="export-link">⬇ Export CSV</a></h2>
+    <div id="logs-panel"></div>
 
     <script>
+        const palette = ["#c084fc", "#f472b6", "#60a5fa", "#34d399", "#fbbf24", "#fb923c", "#a78bfa", "#f87171"];
+
+        function colorFor(name) {
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            return palette[Math.abs(hash) % palette.length];
+        }
+
+        // --- Mascot logic ---
+        const mascot = document.getElementById("mascot");
+        const mascotMsg = document.getElementById("mascot-msg");
+        mascot.classList.add("idle");
+
+        const cheers = ["Yay, task logged! 🌸", "Nice work! ✨", "Go team! 💜", "Logged it! 🎀"];
+
+        function reactMascot() {
+            mascot.classList.remove("idle");
+            mascot.classList.add("happy");
+            document.getElementById("eye-l").setAttribute("cy", "53");
+            document.getElementById("eye-r").setAttribute("cy", "53");
+            document.getElementById("mouth").setAttribute("d", "M 40 66 Q 50 76 60 66");
+            mascotMsg.textContent = cheers[Math.floor(Math.random() * cheers.length)];
+
+            setTimeout(() => {
+                mascot.classList.remove("happy");
+                mascot.classList.add("idle");
+                document.getElementById("eye-l").setAttribute("cy", "55");
+                document.getElementById("eye-r").setAttribute("cy", "55");
+                document.getElementById("mouth").setAttribute("d", "M 42 68 Q 50 72 58 68");
+                mascotMsg.textContent = "";
+            }, 1200);
+        }
+        // --- end mascot logic ---
+
+        // --- Cute sound effects (synthesized, no audio files needed) ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playChime(freqs, durations) {
+            let time = audioCtx.currentTime;
+            freqs.forEach((freq, i) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(freq, time);
+                gain.gain.setValueAtTime(0, time);
+                gain.gain.linearRampToValueAtTime(0.15, time + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.001, time + durations[i]);
+                osc.connect(gain).connect(audioCtx.destination);
+                osc.start(time);
+                osc.stop(time + durations[i]);
+                time += durations[i] * 0.6;
+            });
+        }
+
+        function playLogSound() {
+            playChime([660, 880, 1046], [0.12, 0.12, 0.25]);
+        }
+
+        function playDeleteSound() {
+            playChime([440, 300], [0.15, 0.2]);
+        }
+        // --- end sound effects ---
+
+        // --- Sort toggle ---
+        let sortNewestFirst = true;
+        document.getElementById("sort-toggle").addEventListener("click", (e) => {
+            e.preventDefault();
+            sortNewestFirst = !sortNewestFirst;
+            e.target.textContent = sortNewestFirst ? "↕ Newest first" : "↕ Oldest first";
+            loadData();
+        });
+        // --- end sort toggle ---
+
         async function loadData() {
             const res = await fetch("/data");
             const data = await res.json();
 
-            const statsBody = document.getElementById("stats-body");
-            statsBody.innerHTML = "";
-            data.stats.forEach(s => {
-                statsBody.innerHTML += `<tr><td>${s.name}</td><td>${s.count}</td></tr>`;
-            });
+            const statsPanel = document.getElementById("stats-panel");
+            if (data.stats.length === 0) {
+                statsPanel.innerHTML = `<div class="empty-state">No tasks yet — be the first to log something! 🌷</div>`;
+            } else {
+                const maxCount = Math.max(...data.stats.map(s => s.count));
+                statsPanel.innerHTML = data.stats.map(s => {
+                    const color = colorFor(s.name);
+                    const pct = Math.max(8, (s.count / maxCount) * 100);
+                    return `
+                        <div class="stat-row">
+                            <div class="avatar" style="background:${color}">${s.name.charAt(0).toUpperCase()}</div>
+                            <div class="stat-info">
+                                <div class="stat-name">${s.name}</div>
+                                <div class="bar-track"><div class="bar-fill" style="width:${pct}%; background:${color}"></div></div>
+                            </div>
+                            <div class="stat-count">${s.count}</div>
+                        </div>`;
+                }).join("");
+            }
 
-            const logsBody = document.getElementById("logs-body");
-            logsBody.innerHTML = "";
-            data.logs.forEach(l => {
-                logsBody.innerHTML += `
-                    <tr>
-                        <td>${l.name}</td>
-                        <td>${l.task}</td>
-                        <td>${l.timestamp}</td>
-                        <td><a class="delete-link" onclick="deleteLog(${l.id})">delete</a></td>
-                    </tr>`;
-            });
+            const logsPanel = document.getElementById("logs-panel");
+            const sortedLogs = sortNewestFirst ? data.logs : [...data.logs].reverse();
+            if (sortedLogs.length === 0) {
+                logsPanel.innerHTML = `<div class="panel empty-state">Nothing logged yet 🎀</div>`;
+            } else {
+                logsPanel.innerHTML = sortedLogs.map(l => {
+                    const color = colorFor(l.name);
+                    return `
+                        <div class="log-card">
+                            <div class="avatar" style="background:${color}">${l.name.charAt(0).toUpperCase()}</div>
+                            <div class="log-details">
+                                <div class="log-name">${l.name}</div>
+                                <div class="log-task">${l.task}</div>
+                                <div class="log-time">${l.timestamp}</div>
+                            </div>
+                            <a class="delete-link" onclick="deleteLog(${l.id})">delete</a>
+                        </div>`;
+                }).join("");
+            }
         }
 
         async function deleteLog(id) {
+            playDeleteSound();
             await fetch(`/delete/${id}`, { method: "POST" });
             loadData();
         }
@@ -135,6 +319,8 @@
 
             document.getElementById("name").value = "";
             document.getElementById("task").value = "";
+            reactMascot();
+            playLogSound();
             loadData();
         });
 
