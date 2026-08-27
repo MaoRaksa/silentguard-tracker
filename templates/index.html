@@ -2,17 +2,75 @@
 <html>
 <head>
     <title>SilentGuard Team Tracker</title>
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 700px; margin: 40px auto; background: #f4f4f4; }
-        h1 { color: #2c3e50; }
-        form { margin-bottom: 20px; display: flex; gap: 8px; }
-        input[type=text] { padding: 8px; flex: 1; }
-        button { padding: 8px 16px; background: #2c3e50; color: white; border: none; cursor: pointer; }
-        table { width: 100%; border-collapse: collapse; background: white; margin-bottom: 20px; }
-        th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
-        th { background: #2c3e50; color: white; }
-        a.delete-link { color: #c0392b; cursor: pointer; }
-    </style>
+   <style>
+    body {
+        font-family: 'Segoe UI', sans-serif;
+        max-width: 700px;
+        margin: 40px auto;
+        background: linear-gradient(135deg, #fdf2f8, #f0f9ff);
+        color: #4a4a68;
+        padding: 0 20px;
+    }
+    h1 {
+        color: #8b5cf6;
+        font-size: 2rem;
+    }
+    h1::before { content: "🌸 "; }
+    h2 { color: #a78bfa; }
+
+    form {
+        margin-bottom: 24px;
+        display: flex;
+        gap: 10px;
+    }
+    input[type=text] {
+        padding: 10px 14px;
+        flex: 1;
+        border: 2px solid #e9d5ff;
+        border-radius: 12px;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+    input[type=text]:focus { border-color: #c084fc; }
+
+    button {
+        padding: 10px 20px;
+        background: #c084fc;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background 0.2s, transform 0.1s;
+    }
+    button:hover { background: #a855f7; transform: scale(1.03); }
+
+    table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        background: white;
+        margin-bottom: 24px;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(192, 132, 252, 0.15);
+    }
+    th, td { padding: 12px 14px; text-align: left; }
+    th {
+        background: #e9d5ff;
+        color: #6b21a8;
+        font-weight: 600;
+    }
+    tr:nth-child(even) td { background: #fdf4ff; }
+    tr:hover td { background: #f5e8ff; }
+
+    a.delete-link {
+        color: #f472b6;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    a.delete-link:hover { text-decoration: underline; }
+</style>
 </head>
 <body>
     <h1>Team Activity Log</h1>
