@@ -1,50 +1,75 @@
-from flask import Flask, render_template, request, redirect
-import sqlite3
+from flask import Flask, render_template, request, jsonify
+import psycopg2
+import os
 from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
-DB = "tracker.db"
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+def get_conn():
+    return psycopg2.connect(DATABASE_URL)
 
 def init_db():
-    conn = sqlite3.connect(DB)
-    conn.execute("""
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             name TEXT NOT NULL,
             task TEXT NOT NULL,
             timestamp TEXT NOT NULL
         )
     """)
+    conn.commit()
+    cur.close()
     conn.close()
 
-@app.route("/", methods=["GET"])
+@app.route("/")
 def home():
-    conn = sqlite3.connect(DB)
-    logs = conn.execute("SELECT id, name, task, timestamp FROM logs ORDER BY id DESC").fetchall()
-    stats = conn.execute("SELECT name, COUNT(*) FROM logs GROUP BY name ORDER BY COUNT(*) DESC").fetchall()
+    return render_template("index.html")
+
+@app.route("/data")
+def data():
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("SELECT id, name, task, timestamp FROM logs ORDER BY id DESC")
+    logs = cur.fetchall()
+    cur.execute("SELECT name, COUNT(*) FROM logs GROUP BY name ORDER BY COUNT(*) DESC")
+    stats = cur.fetchall()
+    cur.close()
     conn.close()
-    return render_template("index.html", logs=logs, stats=stats)
+    return jsonify({
+        "logs": [{"id": r[0], "name": r[1], "task": r[2], "timestamp": r[3]} for r in logs],
+        "stats": [{"name": r[0], "count": r[1]} for r in stats]
+    })
 
 @app.route("/add", methods=["POST"])
 def add_log():
     name = request.form["name"]
     task = request.form["task"]
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
-
-    conn = sqlite3.connect(DB)
-    conn.execute("INSERT INTO logs (name, task, timestamp) VALUES (?, ?, ?)", (name, task, timestamp))
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("INSERT INTO logs (name, task, timestamp) VALUES (%s, %s, %s)", (name, task, timestamp))
     conn.commit()
+    cur.close()
     conn.close()
-    return redirect("/")
+    return jsonify({"status": "ok"})
 
-@app.route("/delete/<int:log_id>")
+@app.route("/delete/<int:log_id>", methods=["POST"])
 def delete_log(log_id):
-    conn = sqlite3.connect(DB)
-    conn.execute("DELETE FROM logs WHERE id = ?", (log_id,))
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM logs WHERE id = %s", (log_id,))
     conn.commit()
+    cur.close()
     conn.close()
-    return redirect("/")
+    return jsonify({"status": "ok"})
+
+init_db()
 
 if __name__ == "__main__":
-    init_db()
     app.run(debug=True)
