@@ -8,39 +8,79 @@
         form { margin-bottom: 20px; display: flex; gap: 8px; }
         input[type=text] { padding: 8px; flex: 1; }
         button { padding: 8px 16px; background: #2c3e50; color: white; border: none; cursor: pointer; }
-        table { width: 100%; border-collapse: collapse; background: white; }
+        table { width: 100%; border-collapse: collapse; background: white; margin-bottom: 20px; }
         th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
         th { background: #2c3e50; color: white; }
+        a.delete-link { color: #c0392b; cursor: pointer; }
     </style>
 </head>
 <body>
     <h1>Team Activity Log</h1>
 
-    <form action="/add" method="POST">
-        <input type="text" name="name" placeholder="Your name" required>
-        <input type="text" name="task" placeholder="What did you do?" required>
+    <form id="log-form">
+        <input type="text" id="name" name="name" placeholder="Your name" required>
+        <input type="text" id="task" name="task" placeholder="What did you do?" required>
         <button type="submit">Log it</button>
     </form>
 
     <h2>Contribution Summary</h2>
     <table>
         <tr><th>Name</th><th>Tasks Logged</th></tr>
-        {% for name, count in stats %}
-        <tr><td>{{ name }}</td><td>{{ count }}</td></tr>
-        {% endfor %}
+        <tbody id="stats-body"></tbody>
     </table>
 
     <h2>Full Log</h2>
-<table>
-    <tr><th>Name</th><th>Task</th><th>Time</th><th></th></tr>
-    {% for id, name, task, timestamp in logs %}
-    <tr>
-        <td>{{ name }}</td>
-        <td>{{ task }}</td>
-        <td>{{ timestamp }}</td>
-        <td><a href="/delete/{{ id }}">delete</a></td>
-    </tr>
-    {% endfor %}
+    <table>
+        <tr><th>Name</th><th>Task</th><th>Time</th><th></th></tr>
+        <tbody id="logs-body"></tbody>
     </table>
+
+    <script>
+        async function loadData() {
+            const res = await fetch("/data");
+            const data = await res.json();
+
+            const statsBody = document.getElementById("stats-body");
+            statsBody.innerHTML = "";
+            data.stats.forEach(s => {
+                statsBody.innerHTML += `<tr><td>${s.name}</td><td>${s.count}</td></tr>`;
+            });
+
+            const logsBody = document.getElementById("logs-body");
+            logsBody.innerHTML = "";
+            data.logs.forEach(l => {
+                logsBody.innerHTML += `
+                    <tr>
+                        <td>${l.name}</td>
+                        <td>${l.task}</td>
+                        <td>${l.timestamp}</td>
+                        <td><a class="delete-link" onclick="deleteLog(${l.id})">delete</a></td>
+                    </tr>`;
+            });
+        }
+
+        async function deleteLog(id) {
+            await fetch(`/delete/${id}`, { method: "POST" });
+            loadData();
+        }
+
+        document.getElementById("log-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const name = document.getElementById("name").value;
+            const task = document.getElementById("task").value;
+
+            await fetch("/add", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: `name=${encodeURIComponent(name)}&task=${encodeURIComponent(task)}`
+            });
+
+            document.getElementById("name").value = "";
+            document.getElementById("task").value = "";
+            loadData();
+        });
+
+        loadData();
+    </script>
 </body>
 </html>
