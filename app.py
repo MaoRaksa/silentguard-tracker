@@ -1,6 +1,8 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, Response
 import psycopg2
 import os
+import csv
+import io
 from datetime import datetime
 from dotenv import load_dotenv
 
@@ -68,6 +70,26 @@ def delete_log(log_id):
     cur.close()
     conn.close()
     return jsonify({"status": "ok"})
+
+@app.route("/export")
+def export_csv():
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("SELECT name, task, timestamp FROM logs ORDER BY id DESC")
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["Name", "Task", "Time"])
+    writer.writerows(rows)
+
+    return Response(
+        output.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment; filename=silentguard_log.csv"}
+    )
 
 init_db()
 
